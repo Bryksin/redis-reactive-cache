@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: redis-reactive-cache
+  main:
+    web-application-type: reactive
+  profiles:
+    active: lib
+---
+spring:
+  config:
+    activate:
+      on-profile: lib
+  redis:
+    host: "localhost"
+    port: 6379
+    client-name: ${spring.application.name}
+    client-type: lettuce #provide reactive connection
+    date_format: "dd-MM-yyyy"
+    time_format: "HH:mm:ss"

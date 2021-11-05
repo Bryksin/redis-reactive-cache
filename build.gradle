@@ -1,0 +1,69 @@
+plugins {
+	id 'org.springframework.boot' version '2.5.6'
+	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+	id 'java-library'
+	id 'maven-publish'
+	id 'java'
+}
+
+group = 'com.vsware.libraries'
+if (project.hasProperty('buildVersion')) {
+	project.version = project.buildVersion
+} else {
+	project.version = '0.0.1-SNAPSHOT'
+}
+sourceCompatibility = '11'
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+	mavenLocal()
+}
+
+
+dependencies {
+	api 'org.springframework.boot:spring-boot-starter-data-redis-reactive'
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	api 'org.aspectj:aspectjweaver:1.9.7'
+
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'io.projectreactor:reactor-test'
+	testImplementation 'org.testcontainers:junit-jupiter:1.15.3'
+	testImplementation 'com.github.javafaker:javafaker:1.0.2'
+}
+
+bootJar {
+	enabled = false
+}
+
+jar {
+	enabled = true
+	archiveClassifier = ''
+	//required for testing, but not in final lib jar package
+	exclude 'com/vsware/libraries/redisreactivecache/RedisReactiveCacheApplication.class'
+}
+
+test {
+	useJUnitPlatform()
+}
+
+publishing {
+	publications {
+		maven(MavenPublication) {
+			groupId = "${group}"
+			artifactId = "${rootProject.name}"
+			version = "${project.version}"
+
+			from components.java
+		}
+	}
+}
