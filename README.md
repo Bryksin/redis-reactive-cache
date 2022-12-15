@@ -104,15 +104,13 @@ or
 ./build-jar.sh <optional_build_version> <optional_gradle_action>
 ```
 
-## Publish
-* Generate a personal access token (classic) and grant `write:packages` and `read:packages` permissions. 
-* Set the following system env params:
-  * `GITHUB_USERNAME` with your GitHub username
-  * `GITHUB_TOKEN` with your personal access token (classic)
-* Execute the following command:
+## Publish new version
+* Create new git tag 
 ```shell
-./gradlew publish -x test
+git tag x.y.z
+git push origin x.y.z
 ```
+* In GitHub, create a new released based on the created tag.
 
 ## Maven dependency
 ```xml
@@ -120,7 +118,7 @@ or
   <dependency>
     <groupId>com.github.Hazem-Ben-Khalfallah</groupId>
     <artifactId>redis-reactive-cache</artifactId>
-    <version>0.1.0</version>
+    <version>x.y.z</version>
   </dependency>
 <dependencies>
   
