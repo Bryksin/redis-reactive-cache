@@ -8,11 +8,11 @@ plugins {
 
 apply plugin: 'maven-publish'
 
-group = 'com.blacknebula'
+group = 'com.github.Hazem-Ben-Khalfallah'
 if (project.hasProperty('buildVersion')) {
 	project.version = project.buildVersion
 } else {
-	project.version = '0.0.1'
+	project.version = '0.0.2'
 }
 sourceCompatibility = '11'
 

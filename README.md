@@ -113,3 +113,21 @@ or
 ```shell
 ./gradlew publish -x test
 ```
+
+## Maven dependency
+```xml
+<dependencies>
+  <dependency>
+    <groupId>com.github.Hazem-Ben-Khalfallah</groupId>
+    <artifactId>redis-reactive-cache</artifactId>
+    <version>0.0.2</version>
+  </dependency>
+<dependencies>
+    
+<repositories>
+    <repository>
+        <id>jitpack.io</id>
+        <url>https://jitpack.io</url>
+    </repository>
+</repositories>
+```
