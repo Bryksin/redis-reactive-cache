@@ -14,7 +14,7 @@ if (project.hasProperty('buildVersion')) {
 } else {
 	project.version = '0.0.3'
 }
-sourceCompatibility = '11'
+sourceCompatibility = '1.8'
 
 configurations {
 	compileOnly {
