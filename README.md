@@ -103,3 +103,13 @@ or
 ```shell
 ./build-jar.sh <optional_build_version> <optional_gradle_action>
 ```
+
+## Publish
+* Generate a personal access token (classic) and grant `write:packages` and `read:packages` permissions. 
+* Set the following system env params:
+  * `GITHUB_USERNAME` with your GitHub username
+  * `GITHUB_TOKEN` with your personal access token (classic)
+* Execute the following command:
+```shell
+./gradlew publish -x test
+```

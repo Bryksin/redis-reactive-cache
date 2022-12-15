@@ -6,11 +6,11 @@ plugins {
 	id 'java'
 }
 
-group = 'com.vsware.libraries'
+group = 'com.blacknebula'
 if (project.hasProperty('buildVersion')) {
 	project.version = project.buildVersion
 } else {
-	project.version = '0.0.1-SNAPSHOT'
+	project.version = '0.0.1'
 }
 sourceCompatibility = '11'
 
@@ -57,6 +57,16 @@ test {
 }
 
 publishing {
+	repositories {
+		maven {
+			name = "GitHubPackages"
+			url = uri("https://maven.pkg.github.com/Hazem-Ben-Khalfallah/redis-reactive-cache")
+			credentials {
+				username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME")
+				password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
+			}
+		}
+	}
 	publications {
 		maven(MavenPublication) {
 			groupId = "${group}"
