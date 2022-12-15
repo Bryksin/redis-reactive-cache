@@ -6,6 +6,8 @@ plugins {
 	id 'java'
 }
 
+apply plugin: 'maven-publish'
+
 group = 'com.blacknebula'
 if (project.hasProperty('buildVersion')) {
 	project.version = project.buildVersion
