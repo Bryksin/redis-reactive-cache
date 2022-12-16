@@ -6,7 +6,10 @@ import com.github.javafaker.Faker;
 import com.vsware.libraries.redisreactivecache.config.RedisTestContainerConfig;
 import com.vsware.libraries.redisreactivecache.model.TestTable;
 import com.vsware.libraries.redisreactivecache.service.TestService;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
@@ -23,6 +26,7 @@ import java.util.stream.IntStream;
 @SpringBootTest
 class RedisReactiveCacheTest {
 
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
     @Autowired
     private TestService testService;
     @Autowired
@@ -32,7 +36,10 @@ class RedisReactiveCacheTest {
     @Autowired
     private Faker faker;
 
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+    @AfterAll
+    static void stopTestContainer() {
+        RedisTestContainerConfig.redisContainer.stop();
+    }
 
     private String calculateCacheKey(String key, Object anyArg) {
         return key + "_" + Arrays.hashCode(new Object[]{anyArg});
@@ -51,31 +58,14 @@ class RedisReactiveCacheTest {
         testService.methodCall.set(0);
     }
 
-    @AfterAll
-    static void stopTestContainer() {
-        RedisTestContainerConfig.redisContainer.stop();
-    }
-
-
     @Test
     void test_storeInDb() throws InterruptedException {
         String name = faker.name().firstName();
         TestTable testTable = testService.storeInDb(name).block();
 
         //Verify now Redis contains cache
-        StepVerifier.create(reactiveRedisTemplate.opsForValue().get(name).log())
-                .expectNextMatches(redisResp -> {
-                    try {
-                        TestTable cacheResponse = objectMapper.convertValue(redisResp, TestTable.class);
-                        return Objects.equals(cacheResponse.getId(), testTable.getId()) &&
-                                cacheResponse.getName().equals(testTable.getName()) &&
-                                cacheResponse.getInsertDate().format(formatter).equals(testTable.getInsertDate().format(formatter));
-                    } catch (Exception e) {
-                        return false;
-                    }
-                })
-                .verifyComplete();
-        assert testService.methodCall.get() == 1;
+        checkThatRedisContainsACachedObject(name, testTable);
+        checkOriginalMethodIsExecutedNTimes(1);
     }
 
     @Test
@@ -86,18 +76,8 @@ class RedisReactiveCacheTest {
         List<TestTable> testTables = testService.storeMultipleInDb(names).collectList().block();
         String cacheKey = calculateCacheKey("names", names);
 
-        StepVerifier.create(reactiveRedisTemplate.opsForValue().get(cacheKey).log())
-                .expectNextMatches(redisResp -> {
-                    try {
-                        List<TestTable> cacheResponse = objectMapper.convertValue(redisResp, new TypeReference<List<TestTable>>(){});
-                        return cacheResponse.size() == testTables.size() &&
-                                cacheResponse.get(5).getName().equals(testTables.get(5).getName());
-                    } catch (Exception e) {
-                        return false;
-                    }
-                })
-                .verifyComplete();
-        assert testService.methodCall.get() == 1;
+        checkThatRedisContainsACachedList(cacheKey, testTables);
+        checkOriginalMethodIsExecutedNTimes(1);
     }
 
     @Test
@@ -106,19 +86,8 @@ class RedisReactiveCacheTest {
         TestTable testTable = testService.getFromDb(name).block();
 
         //Verify now Redis contains cache
-        StepVerifier.create(reactiveRedisTemplate.opsForValue().get(name).log())
-                .expectNextMatches(redisResp -> {
-                    try {
-                        TestTable cacheResponse = objectMapper.convertValue(redisResp, TestTable.class);
-                        return Objects.equals(cacheResponse.getId(), testTable.getId()) &&
-                                cacheResponse.getName().equals(testTable.getName()) &&
-                                cacheResponse.getInsertDate().format(formatter).equals(testTable.getInsertDate().format(formatter));
-                    } catch (Exception e) {
-                        return false;
-                    }
-                })
-                .verifyComplete();
-        assert testService.methodCall.get() == 1;
+        checkThatRedisContainsACachedObject(name, testTable);
+        checkOriginalMethodIsExecutedNTimes(1);
     }
 
     @Test
@@ -131,20 +100,24 @@ class RedisReactiveCacheTest {
         TestTable testTable = testService.getFromDb(name).block();
 
         //Verify now Redis contains cache
-        StepVerifier.create(reactiveRedisTemplate.opsForValue().get(name).log())
-                .expectNextMatches(redisResp -> {
-                    try {
-                        TestTable cacheResponse = objectMapper.convertValue(redisResp, TestTable.class);
-                        return Objects.equals(cacheResponse.getId(), testTable.getId()) &&
-                                cacheResponse.getName().equals(testTable.getName()) &&
-                                cacheResponse.getInsertDate().format(formatter).equals(testTable.getInsertDate().format(formatter));
-                    } catch (Exception e) {
-                        return false;
-                    }
-                })
-                .verifyComplete();
+        checkThatRedisContainsACachedObject(name, testTable);
         //make sure actual method with potential DB call was not executed
-        assert testService.methodCall.get() == 0;
+        checkOriginalMethodIsExecutedNTimes(0);
+    }
+
+    @Test
+    void test_getFromDb_whenConditionTrue() throws InterruptedException {
+        String name = faker.name().firstName();
+        TestTable valForCache = new TestTable(1, name, LocalDateTime.now());
+        //Create cache to exist
+        reactiveRedisTemplate.opsForValue().set(name, valForCache).block();
+        //call method
+        TestTable testTable = testService.getFromDb(name).block();
+
+        //Verify now Redis contains cache
+        checkThatRedisContainsACachedObject(name, testTable);
+        //make sure actual method with potential DB call was not executed
+        checkOriginalMethodIsExecutedNTimes(0);
     }
 
     @Test
@@ -160,18 +133,8 @@ class RedisReactiveCacheTest {
 
         List<TestTable> testTables = testService.getMultipleFromDb(names).collectList().block();
 
-        StepVerifier.create(reactiveRedisTemplate.opsForValue().get(cacheKey).log())
-                .expectNextMatches(redisResp -> {
-                    try {
-                        List<TestTable> cacheResponse = objectMapper.convertValue(redisResp, new TypeReference<List<TestTable>>(){});
-                        return cacheResponse.size() == testTables.size() &&
-                                cacheResponse.get(5).getName().equals(testTables.get(5).getName());
-                    } catch (Exception e) {
-                        return false;
-                    }
-                })
-                .verifyComplete();
-        assert testService.methodCall.get() == 0;
+        checkThatRedisContainsACachedList(cacheKey, testTables);
+        checkOriginalMethodIsExecutedNTimes(0);
     }
 
     @Test
@@ -182,18 +145,8 @@ class RedisReactiveCacheTest {
         List<TestTable> testTables = testService.getMultipleFromDb(names).collectList().block();
         String cacheKey = calculateCacheKey("names", names);
 
-        StepVerifier.create(reactiveRedisTemplate.opsForValue().get(cacheKey).log())
-                .expectNextMatches(redisResp -> {
-                    try {
-                        List<TestTable> cacheResponse = objectMapper.convertValue(redisResp, new TypeReference<List<TestTable>>(){});
-                        return cacheResponse.size() == testTables.size() &&
-                                cacheResponse.get(5).getName().equals(testTables.get(5).getName());
-                    } catch (Exception e) {
-                        return false;
-                    }
-                })
-                .verifyComplete();
-        assert testService.methodCall.get() == 1;
+        checkThatRedisContainsACachedList(cacheKey, testTables);
+        checkOriginalMethodIsExecutedNTimes(1);
     }
 
     @Test
@@ -206,20 +159,9 @@ class RedisReactiveCacheTest {
         TestTable testTable = testService.updateDbRecord(new TestTable(1, faker.name().firstName(), LocalDateTime.now())).block();
 
         //Verify now Redis contains updated cache
-        StepVerifier.create(reactiveRedisTemplate.opsForValue().get("1").log())
-                .expectNextMatches(redisResp -> {
-                    try {
-                        TestTable cacheResponse = objectMapper.convertValue(redisResp, TestTable.class);
-                        return Objects.equals(cacheResponse.getId(), testTable.getId()) &&
-                                cacheResponse.getName().equals(testTable.getName()) &&
-                                cacheResponse.getInsertDate().format(formatter).equals(testTable.getInsertDate().format(formatter));
-                    } catch (Exception e) {
-                        return false;
-                    }
-                })
-                .verifyComplete();
+        checkThatRedisContainsACachedObject("1", testTable);
         //make sure actual method with potential DB call was not executed
-        assert testService.methodCall.get() == 1;
+        checkOriginalMethodIsExecutedNTimes(1);
     }
 
     @Test
@@ -228,20 +170,9 @@ class RedisReactiveCacheTest {
         TestTable testTable = testService.updateDbRecord(new TestTable(1, faker.name().firstName(), LocalDateTime.now())).block();
 
         //Verify now Redis contains updated cache
-        StepVerifier.create(reactiveRedisTemplate.opsForValue().get("1").log())
-                .expectNextMatches(redisResp -> {
-                    try {
-                        TestTable cacheResponse = objectMapper.convertValue(redisResp, TestTable.class);
-                        return Objects.equals(cacheResponse.getId(), testTable.getId()) &&
-                                cacheResponse.getName().equals(testTable.getName()) &&
-                                cacheResponse.getInsertDate().format(formatter).equals(testTable.getInsertDate().format(formatter));
-                    } catch (Exception e) {
-                        return false;
-                    }
-                })
-                .verifyComplete();
+        checkThatRedisContainsACachedObject("1", testTable);
         //make sure actual method with potential DB call was not executed
-        assert testService.methodCall.get() == 1;
+        checkOriginalMethodIsExecutedNTimes(1);
     }
 
     @Test
@@ -259,19 +190,8 @@ class RedisReactiveCacheTest {
         List<TestTable> recsToUpdate = valForCache.stream().peek(item -> item.setName(faker.name().firstName())).collect(Collectors.toList());
         List<TestTable> testTables = testService.updateMultipleDbRecords(recsToUpdate).collectList().block();
 
-        StepVerifier.create(reactiveRedisTemplate.opsForValue().get(cacheKey).log())
-                .expectNextMatches(redisResp -> {
-
-                    try {
-                        List<TestTable> cacheResponse = objectMapper.convertValue(redisResp, new TypeReference<List<TestTable>>(){});
-                        return cacheResponse.size() == testTables.size() &&
-                                cacheResponse.get(5).getName().equals(testTables.get(5).getName());
-                    } catch (Exception e) {
-                        return false;
-                    }
-                })
-                .verifyComplete();
-        assert testService.methodCall.get() == 1;
+        checkThatRedisContainsACachedList(cacheKey, testTables);
+        checkOriginalMethodIsExecutedNTimes(1);
     }
 
     @Test
@@ -279,24 +199,13 @@ class RedisReactiveCacheTest {
         String cacheKey = "multiple";
 
         List<TestTable> testTables = testService.updateMultipleDbRecords(
-                IntStream.range(0, 10)
-                        .mapToObj(index -> new TestTable(index, faker.name().firstName(), LocalDateTime.now()))
-                        .collect(Collectors.toList()))
+                        IntStream.range(0, 10)
+                                .mapToObj(index -> new TestTable(index, faker.name().firstName(), LocalDateTime.now()))
+                                .collect(Collectors.toList()))
                 .collectList().block();
 
-        StepVerifier.create(reactiveRedisTemplate.opsForValue().get(cacheKey).log())
-                .expectNextMatches(redisResp -> {
-
-                    try {
-                        List<TestTable> cacheResponse = objectMapper.convertValue(redisResp, new TypeReference<List<TestTable>>(){});
-                        return cacheResponse.size() == testTables.size() &&
-                                cacheResponse.get(5).getName().equals(testTables.get(5).getName());
-                    } catch (Exception e) {
-                        return false;
-                    }
-                })
-                .verifyComplete();
-        assert testService.methodCall.get() == 1;
+        checkThatRedisContainsACachedList(cacheKey, testTables);
+        checkOriginalMethodIsExecutedNTimes(1);
     }
 
     @Test
@@ -310,10 +219,8 @@ class RedisReactiveCacheTest {
         //Deleting
         testService.deleteDbRec(valForCache).block();
 
-        StepVerifier.create(reactiveRedisTemplate.opsForValue().get(name).log())
-                .expectNextCount(0)
-                .verifyComplete();
-        assert testService.methodCall.get() == 1;
+        checkThatKeyHasBeenRemovedFromRedis(name);
+        checkOriginalMethodIsExecutedNTimes(1);
     }
 
     @Test
@@ -322,10 +229,8 @@ class RedisReactiveCacheTest {
         //Deleting
         testService.deleteDbRec(new TestTable(1, name, LocalDateTime.now())).block();
 
-        StepVerifier.create(reactiveRedisTemplate.opsForValue().get(name).log())
-                .expectNextCount(0)
-                .verifyComplete();
-        assert testService.methodCall.get() == 1;
+        checkThatKeyHasBeenRemovedFromRedis(name);
+        checkOriginalMethodIsExecutedNTimes(1);
     }
 
     @Test
@@ -342,10 +247,8 @@ class RedisReactiveCacheTest {
         //Deleting
         testService.deleteMultipleDbRecs(testTables).block();
 
-        StepVerifier.create(reactiveRedisTemplate.opsForValue().get(cacheKey).log())
-                .expectNextCount(0)
-                .verifyComplete();
-        assert testService.methodCall.get() == 1;
+        checkThatKeyHasBeenRemovedFromRedis(cacheKey);
+        checkOriginalMethodIsExecutedNTimes(1);
     }
 
     @Test
@@ -359,10 +262,48 @@ class RedisReactiveCacheTest {
         //Deleting
         testService.deleteMultipleDbRecs(testTables).block();
 
-        StepVerifier.create(reactiveRedisTemplate.opsForValue().get(cacheKey).log())
+        checkThatKeyHasBeenRemovedFromRedis(cacheKey);
+        checkOriginalMethodIsExecutedNTimes(1);
+    }
+
+    private void checkThatRedisContainsACachedObject(String key, TestTable testTable) {
+        StepVerifier.create(reactiveRedisTemplate.opsForValue().get(key).log())
+                .expectNextMatches(redisResp -> {
+                    try {
+                        TestTable cacheResponse = objectMapper.convertValue(redisResp, TestTable.class);
+                        return Objects.equals(cacheResponse.getId(), testTable.getId()) &&
+                                cacheResponse.getName().equals(testTable.getName()) &&
+                                cacheResponse.getInsertDate().format(formatter).equals(testTable.getInsertDate().format(formatter));
+                    } catch (Exception e) {
+                        return false;
+                    }
+                })
+                .verifyComplete();
+    }
+
+    private void checkThatRedisContainsACachedList(String key, List<TestTable> testTables) {
+        StepVerifier.create(reactiveRedisTemplate.opsForValue().get(key).log())
+                .expectNextMatches(redisResp -> {
+                    try {
+                        List<TestTable> cacheResponse = objectMapper.convertValue(redisResp, new TypeReference<List<TestTable>>() {
+                        });
+                        return cacheResponse.size() == testTables.size() &&
+                                cacheResponse.get(5).getName().equals(testTables.get(5).getName());
+                    } catch (Exception e) {
+                        return false;
+                    }
+                })
+                .verifyComplete();
+    }
+
+    private void checkThatKeyHasBeenRemovedFromRedis(String name) {
+        StepVerifier.create(reactiveRedisTemplate.opsForValue().get(name).log())
                 .expectNextCount(0)
                 .verifyComplete();
-        assert testService.methodCall.get() == 1;
+    }
+
+    private void checkOriginalMethodIsExecutedNTimes(int count) {
+        assert testService.methodCall.get() == count;
     }
 
 }

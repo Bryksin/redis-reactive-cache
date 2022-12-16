@@ -24,7 +24,6 @@ public class AspectUtils {
             return cacheKey + "_" + Arrays.hashCode(joinPoint.getArgs());
         else
             return cacheKey;
-
     }
 
     public Method getMethod(JoinPoint joinPoint) {

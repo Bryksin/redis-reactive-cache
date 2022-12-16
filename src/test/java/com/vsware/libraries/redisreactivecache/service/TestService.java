@@ -20,11 +20,9 @@ import java.util.stream.IntStream;
 @Service
 public class TestService {
 
+    public final static AtomicInteger methodCall = new AtomicInteger();
     @Autowired
     private Faker faker;
-
-    public final static AtomicInteger methodCall = new AtomicInteger();
-
 
     @RedisReactiveCacheAdd(key = "#name")
     public Mono<TestTable> storeInDb(String name) throws InterruptedException {
