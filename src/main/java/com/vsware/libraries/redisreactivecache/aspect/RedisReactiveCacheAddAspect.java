@@ -50,7 +50,7 @@ public final class RedisReactiveCacheAddAspect extends AbstractRedisReactiveCach
     }
 
     private CorePublisher<?> addToCache(ProceedingJoinPoint joinPoint, Class<?> returnType, String key) {
-        log.info("Evaluated Redis cacheKey: " + key);
+        log.info("Add to cache [{}]", key);
         if (returnType.isAssignableFrom(Mono.class)) {
             return putMethodMonoResponseToCache(joinPoint, key);
         } else if (returnType.isAssignableFrom(Flux.class)) {

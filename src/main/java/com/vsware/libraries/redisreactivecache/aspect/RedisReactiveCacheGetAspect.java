@@ -62,7 +62,7 @@ public final class RedisReactiveCacheGetAspect extends AbstractRedisReactiveCach
                                                           Class<?> returnType,
                                                           String key,
                                                           TypeReference<Object> typeRefForMapper) {
-        log.info("Evaluated Redis cacheKey: " + key);
+        log.info("Get from cache [{}]", key);
         if (returnType.isAssignableFrom(Mono.class)) {
             return cache.get(key)
                     .map(cacheResponse -> objectMapper.convertValue(cacheResponse, typeRefForMapper))

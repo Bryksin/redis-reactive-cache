@@ -53,7 +53,7 @@ public final class RedisReactiveCacheUpdateAspect extends AbstractRedisReactiveC
     }
 
     private CorePublisher<?> updateCache(ProceedingJoinPoint joinPoint, Class<?> returnType, String key) {
-        log.info("Evaluated Redis cacheKey: " + key);
+        log.info("Update cache [{}]", key);
         if (returnType.isAssignableFrom(Mono.class)) {
             cache.delete(key).subscribe();
             return putMethodMonoResponseToCache(joinPoint, key);

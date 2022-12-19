@@ -41,7 +41,7 @@ public class RedisReactiveCacheEvictAspect extends AbstractRedisReactiveCacheAdd
     }
 
     private Object evictCache(ProceedingJoinPoint joinPoint, String key) throws Throwable {
-        log.info("Evaluated Redis cacheKey: " + key);
+        log.info("Evict from cache [{}]", key);
         cache.delete(key).subscribe();
         return joinPoint.proceed(joinPoint.getArgs());
     }
