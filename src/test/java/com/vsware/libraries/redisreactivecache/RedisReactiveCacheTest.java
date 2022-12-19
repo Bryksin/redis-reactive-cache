@@ -314,7 +314,7 @@ class RedisReactiveCacheTest {
                 .verifyComplete();
     }
 
-    private void  checkThatKeyHasBeenRemovedFromRedis(String name) {
+    private void checkThatKeyHasBeenRemovedFromRedis(String name) {
         StepVerifier.create(reactiveRedisTemplate.opsForValue().get(name).log())
                 .expectNextCount(0)
                 .verifyComplete();

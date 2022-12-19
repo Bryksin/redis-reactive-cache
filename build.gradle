@@ -12,7 +12,7 @@ group = 'com.github.Hazem-Ben-Khalfallah'
 if (project.hasProperty('buildVersion')) {
 	project.version = project.buildVersion
 } else {
-	project.version = '0.2.0'
+	project.version = '0.3.0'
 }
 sourceCompatibility = '1.8'
 

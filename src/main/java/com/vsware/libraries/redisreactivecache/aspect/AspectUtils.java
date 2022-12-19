@@ -1,4 +1,4 @@
-package com.vsware.libraries.redisreactivecache.util;
+package com.vsware.libraries.redisreactivecache.aspect;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.aspectj.lang.JoinPoint;
@@ -35,7 +35,7 @@ public class AspectUtils {
         return ((ParameterizedType) method.getGenericReturnType()).getActualTypeArguments()[0];
     }
 
-    public TypeReference getTypeReference(Method method) {
+    public TypeReference<Object> getTypeReference(Method method) {
         return new TypeReference<Object>() {
             @Override
             public Type getType() {
