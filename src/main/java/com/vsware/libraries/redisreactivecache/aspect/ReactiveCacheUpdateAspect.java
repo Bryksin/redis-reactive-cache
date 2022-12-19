@@ -1,6 +1,6 @@
 package com.vsware.libraries.redisreactivecache.aspect;
 
-import com.vsware.libraries.redisreactivecache.annotation.RedisReactiveCacheAdd;
+import com.vsware.libraries.redisreactivecache.annotation.ReactiveCacheUpdate;
 import com.vsware.libraries.redisreactivecache.errors.UnsupportedReturnTypeError;
 import com.vsware.libraries.redisreactivecache.ports.CachePort;
 import lombok.RequiredArgsConstructor;
@@ -22,40 +22,45 @@ import java.lang.reflect.Method;
 @Component
 @ConditionalOnClass({ReactiveRedisTemplate.class})
 @RequiredArgsConstructor
-public final class RedisReactiveCacheAddAspect extends AbstractRedisReactiveCacheAddAspect {
+public final class ReactiveCacheUpdateAspect extends AbstractReactiveCacheAddAspect {
 
     private final AspectUtils aspectUtils;
     private final CachePort cache;
 
     /**
-     * RedisReactiveCacheAdd - Add result of annotated method to Redis cache
-     * Intended to be used on method which creates brand-new record.
-     * First returns saved record as server response, and under the hood (without blocking server response) saves record to Redis cache
+     * RedisReactiveCacheUpdate - Delete cache from Redis and update it with new stored record
+     * Intended to be used on method which update some records in DB
+     * Evict cache from Redis without waiting for response, in the main time sore updated record in DB,
+     * then return updated record as server response, and under the hood (without blocking server response)
+     * saves updated record to Redis cache
      */
-    @Around("execution(public * *(..)) && @annotation(com.vsware.libraries.redisreactivecache.annotation.RedisReactiveCacheAdd)")
-    public Object redisReactiveCacheAdd(ProceedingJoinPoint joinPoint) {
-        return addToCache(joinPoint,
+    @Around("execution(public * *(..)) && @annotation(com.vsware.libraries.redisreactivecache.annotation.ReactiveCacheUpdate)")
+    public Object redisReactiveCacheUpdate(ProceedingJoinPoint joinPoint) {
+        return updateCache(joinPoint,
                 getMethod(joinPoint).getReturnType(),
                 getKey(joinPoint));
-    }
-
-    private String getKey(ProceedingJoinPoint joinPoint) {
-        RedisReactiveCacheAdd annotation = getMethod(joinPoint)
-                .getAnnotation(RedisReactiveCacheAdd.class);
-        return aspectUtils.getKeyVal(joinPoint, annotation.key(), annotation.useArgsHash());
     }
 
     private Method getMethod(ProceedingJoinPoint joinPoint) {
         return aspectUtils.getMethod(joinPoint);
     }
 
-    private CorePublisher<?> addToCache(ProceedingJoinPoint joinPoint, Class<?> returnType, String key) {
-        log.info("Add to cache [{}]", key);
+    private String getKey(ProceedingJoinPoint joinPoint) {
+        ReactiveCacheUpdate annotation = getMethod(joinPoint)
+                .getAnnotation(ReactiveCacheUpdate.class);
+        return aspectUtils.getKeyVal(joinPoint, annotation.key(), annotation.useArgsHash());
+    }
+
+    private CorePublisher<?> updateCache(ProceedingJoinPoint joinPoint, Class<?> returnType, String key) {
+        log.info("Update cache [{}]", key);
         if (returnType.isAssignableFrom(Mono.class)) {
+            cache.delete(key).subscribe();
             return putMethodMonoResponseToCache(joinPoint, key);
         } else if (returnType.isAssignableFrom(Flux.class)) {
+            cache.delete(key).subscribe();
             return putMethodFluxResponseToCache(joinPoint, key);
         }
+
         throw new UnsupportedReturnTypeError();
     }
 

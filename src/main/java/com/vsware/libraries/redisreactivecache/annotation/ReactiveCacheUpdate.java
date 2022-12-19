@@ -5,7 +5,7 @@ import java.lang.annotation.*;
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface RedisReactiveCacheAdd{
+public @interface ReactiveCacheUpdate {
     String key() default "";
     boolean useArgsHash() default false;
 }

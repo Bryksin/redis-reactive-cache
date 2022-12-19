@@ -1,11 +1,11 @@
 package com.vsware.libraries.redisreactivecache.service;
 
 import com.github.javafaker.Faker;
-import com.vsware.libraries.redisreactivecache.annotation.RedisReactiveCacheAdd;
-import com.vsware.libraries.redisreactivecache.annotation.RedisReactiveCacheEvict;
-import com.vsware.libraries.redisreactivecache.annotation.RedisReactiveCacheFlushAll;
-import com.vsware.libraries.redisreactivecache.annotation.RedisReactiveCacheGet;
-import com.vsware.libraries.redisreactivecache.annotation.RedisReactiveCacheUpdate;
+import com.vsware.libraries.redisreactivecache.annotation.ReactiveCacheAdd;
+import com.vsware.libraries.redisreactivecache.annotation.ReactiveCacheEvict;
+import com.vsware.libraries.redisreactivecache.annotation.ReactiveCacheFlushAll;
+import com.vsware.libraries.redisreactivecache.annotation.ReactiveCacheGet;
+import com.vsware.libraries.redisreactivecache.annotation.ReactiveCacheUpdate;
 import com.vsware.libraries.redisreactivecache.model.TestTable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,7 +25,7 @@ public class TestService {
     @Autowired
     private Faker faker;
 
-    @RedisReactiveCacheAdd(key = "#name")
+    @ReactiveCacheAdd(key = "#name")
     public Mono<TestTable> storeInDb(String name) throws InterruptedException {
         //imitating call to db
         Thread.sleep(10);
@@ -34,7 +34,7 @@ public class TestService {
         //end
     }
 
-    @RedisReactiveCacheAdd(key = "names", useArgsHash = true)
+    @ReactiveCacheAdd(key = "names", useArgsHash = true)
     public Flux<TestTable> storeMultipleInDb(List<String> names) throws InterruptedException {
         //imitating call to db
         Thread.sleep(10);
@@ -47,7 +47,7 @@ public class TestService {
         //end
     }
 
-    @RedisReactiveCacheGet(key = "#name")
+    @ReactiveCacheGet(key = "#name")
     public Mono<TestTable> getFromDb(String name) throws InterruptedException {
         //imitating call to db
         Thread.sleep(10);
@@ -56,7 +56,7 @@ public class TestService {
         //end
     }
 
-    @RedisReactiveCacheGet(key = "names", useArgsHash = true)
+    @ReactiveCacheGet(key = "names", useArgsHash = true)
     public Flux<TestTable> getMultipleFromDb(List<String> names) throws InterruptedException {
         //imitating call to db
         Thread.sleep(10);
@@ -69,7 +69,7 @@ public class TestService {
         //end
     }
 
-    @RedisReactiveCacheUpdate(key = "#testTable.getId().toString()")
+    @ReactiveCacheUpdate(key = "#testTable.getId().toString()")
     public Mono<TestTable> updateDbRecord(TestTable testTable) throws InterruptedException {
         //imitating call to db
         Thread.sleep(10);
@@ -78,7 +78,7 @@ public class TestService {
         //end
     }
 
-    @RedisReactiveCacheUpdate(key = "multiple")
+    @ReactiveCacheUpdate(key = "multiple")
     public Flux<TestTable> updateMultipleDbRecords(List<TestTable> testTables) throws InterruptedException {
         //imitating call to db
         Thread.sleep(10);
@@ -87,7 +87,7 @@ public class TestService {
         //end
     }
 
-    @RedisReactiveCacheEvict(key = "#testTable.getName()")
+    @ReactiveCacheEvict(key = "#testTable.getName()")
     public Mono<Void> deleteDbRec(TestTable testTable) throws InterruptedException {
         //imitating call to db
         Thread.sleep(10);
@@ -96,7 +96,7 @@ public class TestService {
         //end
     }
 
-    @RedisReactiveCacheEvict(key = "names", useArgsHash = true)
+    @ReactiveCacheEvict(key = "names", useArgsHash = true)
     public Mono<Void> deleteMultipleDbRecs(List<TestTable> testTables) throws InterruptedException {
         //imitating call to db
         Thread.sleep(10);
@@ -105,7 +105,7 @@ public class TestService {
         //end
     }
 
-    @RedisReactiveCacheFlushAll()
+    @ReactiveCacheFlushAll()
     public Mono<Void> flushAllDbRecs() throws InterruptedException {
         //imitating call to db
         Thread.sleep(10);

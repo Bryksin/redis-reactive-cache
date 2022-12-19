@@ -15,14 +15,14 @@ import org.springframework.stereotype.Component;
 @Component
 @ConditionalOnClass({ReactiveRedisTemplate.class})
 @RequiredArgsConstructor
-public final class RedisReactiveCacheFlushAllAspect extends AbstractRedisReactiveCacheAddAspect{
+public final class ReactiveCacheFlushAllAspect extends AbstractReactiveCacheAddAspect {
 
     private final CachePort cache;
 
     /**
      * RedisReactiveCacheFlushAll - Delete all cache enties from Redis
      */
-    @Around("execution(public * *(..)) && @annotation(com.vsware.libraries.redisreactivecache.annotation.RedisReactiveCacheFlushAll)")
+    @Around("execution(public * *(..)) && @annotation(com.vsware.libraries.redisreactivecache.annotation.ReactiveCacheFlushAll)")
     public Object redisReactiveCacheFlushAll(ProceedingJoinPoint joinPoint) throws Throwable {
         log.info("Flush all keys from cache");
         cache.flushAll().subscribe();

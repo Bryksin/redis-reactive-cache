@@ -2,7 +2,7 @@ package com.vsware.libraries.redisreactivecache.aspect;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vsware.libraries.redisreactivecache.annotation.RedisReactiveCacheGet;
+import com.vsware.libraries.redisreactivecache.annotation.ReactiveCacheGet;
 import com.vsware.libraries.redisreactivecache.errors.UnsupportedReturnTypeError;
 import com.vsware.libraries.redisreactivecache.ports.CachePort;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @Component
 @ConditionalOnClass({ReactiveRedisTemplate.class})
 @RequiredArgsConstructor
-public final class RedisReactiveCacheGetAspect extends AbstractRedisReactiveCacheAddAspect {
+public final class ReactiveCacheGetAspect extends AbstractReactiveCacheAddAspect {
 
     private final AspectUtils aspectUtils;
     private final ObjectMapper objectMapper;
@@ -39,7 +39,7 @@ public final class RedisReactiveCacheGetAspect extends AbstractRedisReactiveCach
      * set Redis with missing cache - to be available for next request.
      * If Redis cache exists - return cache, don't query DB
      */
-    @Around("execution(public * *(..)) && @annotation(com.vsware.libraries.redisreactivecache.annotation.RedisReactiveCacheGet)")
+    @Around("execution(public * *(..)) && @annotation(com.vsware.libraries.redisreactivecache.annotation.ReactiveCacheGet)")
     public Object redisReactiveCacheGet(ProceedingJoinPoint joinPoint) {
         Method method = getMethod(joinPoint);
         return getFromCacheIfAvailable(joinPoint,
@@ -49,8 +49,8 @@ public final class RedisReactiveCacheGetAspect extends AbstractRedisReactiveCach
     }
 
     private String getKey(ProceedingJoinPoint joinPoint) {
-        RedisReactiveCacheGet annotation = getMethod(joinPoint)
-                .getAnnotation(RedisReactiveCacheGet.class);
+        ReactiveCacheGet annotation = getMethod(joinPoint)
+                .getAnnotation(ReactiveCacheGet.class);
         return aspectUtils.getKeyVal(joinPoint, annotation.key(), annotation.useArgsHash());
     }
 

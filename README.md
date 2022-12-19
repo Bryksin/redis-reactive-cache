@@ -6,10 +6,10 @@ This Redis Reactive Cache library brings reactive cache functionality to your Sp
 It is self Auto Configurable, all you need is to import it as dependency.
 
 This library provides 4 annotations:
-* `@RedisReactiveCacheAdd` - stores cache after the method execution behind the scenes without blocking server response.
-* `@RedisReactiveCacheGet` - gets cache, if cache not available, it will execute the method and store the result (without blocking server response) in cache for future use.
-* `@RedisReactiveCacheUpdate` - removes cache without blocking, execute annotated method and store the result in cache (without blocking server response).
-* `@RedisReactiveCacheEvict` - removes cache without blocking.
+* `@ReactiveCacheAdd` - stores cache after the method execution behind the scenes without blocking server response.
+* `@ReactiveCacheGet` - gets cache, if cache not available, it will execute the method and store the result (without blocking server response) in cache for future use.
+* `@ReactiveCacheUpdate` - removes cache without blocking, execute annotated method and store the result in cache (without blocking server response).
+* `@ReactiveCacheEvict` - removes cache without blocking.
 
 You can annotate your methods with any of them, and it will be automatically cached.
 All of those annotations has 2 arguments:
@@ -23,43 +23,43 @@ set it to `true`. Very useful for collections parameters.
 @Service
 public class YourServiceClass {
     
-    @RedisReactiveCacheAdd(key = "<your_key>")
+    @ReactiveCacheAdd(key = "<your_key>")
     public Mono<TestTable> storeInDb(String name) {
         //your reactive call to DB
         //yourReactiveRepository.save(new DBModel(name));
     }
 
-    @RedisReactiveCacheAdd(key = "names", useArgsHash = true) //CacheKey will be: names_<hash_of_args>
+    @ReactiveCacheAdd(key = "names", useArgsHash = true) //CacheKey will be: names_<hash_of_args>
     public Flux<TestTable> storeMultipleInDb(List<String> names) {
         //your reactive call to DB
     }
 
-    @RedisReactiveCacheGet(key = "#name") //CacheKey will be: value of name argument
+    @ReactiveCacheGet(key = "#name") //CacheKey will be: value of name argument
     public Mono<TestTable> getFromDb(String name) {
         //your reactive call to DB
     }
 
-    @RedisReactiveCacheGet(key = "names", useArgsHash = true)
+    @ReactiveCacheGet(key = "names", useArgsHash = true)
     public Flux<TestTable> getMultipleFromDb(List<String> names) {
         //your reactive call to DB
     }
 
-    @RedisReactiveCacheUpdate(key = "#testTable.getId().toString()")
+    @ReactiveCacheUpdate(key = "#testTable.getId().toString()")
     public Mono<TestTable> updateDbRecord(DbModel dbModel) {
         //your reactive call to DB
     }
 
-    @RedisReactiveCacheUpdate(key = "multiple")
+    @ReactiveCacheUpdate(key = "multiple")
     public Flux<TestTable> updateMultipleDbRecords(List<DbModel> dbModels) {
         //your reactive call to DB
     }
 
-    @RedisReactiveCacheEvict(key = "#testTable.getName()")
+    @ReactiveCacheEvict(key = "#testTable.getName()")
     public Mono<Void> deleteDbRec(DbModel dbModel) {
         //your reactive call to DB
     }
 
-    @RedisReactiveCacheEvict(key = "names", useArgsHash = true)
+    @ReactiveCacheEvict(key = "names", useArgsHash = true)
     public Mono<Void> deleteMultipleDbRecs(List<DbModel> dbModels) {
         //your reactive call to DB
     }
@@ -70,7 +70,7 @@ These annotations could be used directly on your Reactive Repository interface:
 ```java
 public interface yourReactiveRepo extends ReactiveCrudRepository<YourDBModel, PkType> {
 
-    @RedisReactiveCacheGet(key = "#somefield")
+    @ReactiveCacheGet(key = "#somefield")
     Mono<DbModel> FindBySomeField(String someField);
 }
 ```
