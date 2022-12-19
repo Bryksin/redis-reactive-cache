@@ -129,3 +129,6 @@ git push origin x.y.z
     </repository>
 </repositories>
 ```
+
+## Credits
+Special thanks goes to [Bryksin](https://github.com/Bryksin) for starting [this project](https://github.com/Bryksin/redis-reactive-cache) since there is no official alternative for the moment. 

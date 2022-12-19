@@ -3,6 +3,7 @@ package com.vsware.libraries.redisreactivecache.service;
 import com.github.javafaker.Faker;
 import com.vsware.libraries.redisreactivecache.annotation.RedisReactiveCacheAdd;
 import com.vsware.libraries.redisreactivecache.annotation.RedisReactiveCacheEvict;
+import com.vsware.libraries.redisreactivecache.annotation.RedisReactiveCacheFlushAll;
 import com.vsware.libraries.redisreactivecache.annotation.RedisReactiveCacheGet;
 import com.vsware.libraries.redisreactivecache.annotation.RedisReactiveCacheUpdate;
 import com.vsware.libraries.redisreactivecache.model.TestTable;
@@ -97,6 +98,15 @@ public class TestService {
 
     @RedisReactiveCacheEvict(key = "names", useArgsHash = true)
     public Mono<Void> deleteMultipleDbRecs(List<TestTable> testTables) throws InterruptedException {
+        //imitating call to db
+        Thread.sleep(10);
+        methodCall.incrementAndGet();
+        return Mono.empty();
+        //end
+    }
+
+    @RedisReactiveCacheFlushAll()
+    public Mono<Void> flushAllDbRecs() throws InterruptedException {
         //imitating call to db
         Thread.sleep(10);
         methodCall.incrementAndGet();

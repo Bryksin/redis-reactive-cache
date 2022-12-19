@@ -32,12 +32,11 @@ public class RedisReactiveCacheAspect {
     private final ReactiveRedisTemplate reactiveRedisTemplate;
     private final AspectUtils aspectUtils;
     private final ObjectMapper objectMapper;
-    /*
-    RedisReactiveCacheAdd - Add result of annotated method to Redis cache
-    Intended to be used on method which creates brand new record
-    Example: ReactiveCrudRepository.save(brandNewRecord) or ReactiveCrudRepository.saveAll(brandNewRecordList)
 
-    First returns saved record as server response, and under the hood (without blocking server response) saves record to Redis cache
+    /**
+     * RedisReactiveCacheAdd - Add result of annotated method to Redis cache
+     * Intended to be used on method which creates brand new record.
+     * First returns saved record as server response, and under the hood (without blocking server response) saves record to Redis cache
      */
     @Around("execution(public * *(..)) && @annotation(com.vsware.libraries.redisreactivecache.annotation.RedisReactiveCacheAdd)")
     public Object redisReactiveCacheAdd(ProceedingJoinPoint joinPoint) {
@@ -54,14 +53,12 @@ public class RedisReactiveCacheAspect {
         throw new RuntimeException("RedisReactiveCacheAdd: Annotated method has unsupported return type, expected Mono<?> or Flux<?>");
     }
 
-    /*
-    RedisReactiveCacheGet - Read cache from Redis by key
-    Intended to be used on method which returns some records from DB
-    Example: ReactiveCrudRepository.findBy...(params) or ReactiveCrudRepository.findAllBy...(params)
-
-    First read Redis Cache, if result is empty, read DB, return response back to user and under the hood (without blocking server response)
-    set Redis with missing cache - to be available for next request.
-    If Redis cache exists - return cache, don't query DB
+    /**
+     * RedisReactiveCacheGet - Read cache from Redis by key
+     * Intended to be used on method which returns some records from DB.
+     * First read Redis Cache, if result is empty, read DB, return response back to user and under the hood (without blocking server response)
+     * set Redis with missing cache - to be available for next request.
+     * If Redis cache exists - return cache, don't query DB
      */
     @Around("execution(public * *(..)) && @annotation(com.vsware.libraries.redisreactivecache.annotation.RedisReactiveCacheGet)")
     public Object redisReactiveCacheGet(ProceedingJoinPoint joinPoint) {
@@ -86,14 +83,12 @@ public class RedisReactiveCacheAspect {
         throw new RuntimeException("RedisReactiveCacheGet: Annotated method has unsupported return type, expected Mono<?> or Flux<?>");
     }
 
-    /*
-    RedisReactiveCacheUpdate - Delete cache from Redis and update it with new stored record
-    Intended to be used on method which update some records in DB
-    Example: ReactiveCrudRepository.save(updatedNewRecord) or ReactiveCrudRepository.saveAll(updatedNewRecordList)
-
-    Evict cache from Redis without waiting for response, in the main time sore updated record in DB,
-    then return updated record as server response, and under the hood (without blocking server response)
-    saves updated record to Redis cache
+    /**
+     * RedisReactiveCacheUpdate - Delete cache from Redis and update it with new stored record
+     * Intended to be used on method which update some records in DB
+     * Evict cache from Redis without waiting for response, in the main time sore updated record in DB,
+     * then return updated record as server response, and under the hood (without blocking server response)
+     * saves updated record to Redis cache
      */
     @Around("execution(public * *(..)) && @annotation(com.vsware.libraries.redisreactivecache.annotation.RedisReactiveCacheUpdate)")
     public Object redisReactiveCacheUpdate(ProceedingJoinPoint joinPoint) {
@@ -113,21 +108,28 @@ public class RedisReactiveCacheAspect {
     }
 
 
-    /*
-    RedisReactiveCacheEvict - Delete cache from Redis and delete stored record
-    Intended to be used on method which update some records in DB
-    Example: ReactiveCrudRepository.delete(recordToDelete) or ReactiveCrudRepository.deleteAll(recordToDeleteList)
-
-    Evict cache from Redis without waiting for response, in the main time execute annotated method
+    /**
+     * RedisReactiveCacheEvict - Delete cache from Redis and delete stored record
+     * Intended to be used on method which update some records in DB.
+     * Evict cache from Redis without waiting for response, in the main time execute annotated method
      */
     @Around("execution(public * *(..)) && @annotation(com.vsware.libraries.redisreactivecache.annotation.RedisReactiveCacheEvict)")
     public Object redisReactiveCacheEvict(ProceedingJoinPoint joinPoint) throws Throwable {
         Method method = aspectUtils.getMethod(joinPoint);
-        Class<?> returnType = method.getReturnType();
         RedisReactiveCacheEvict annotation = method.getAnnotation(RedisReactiveCacheEvict.class);
         String key = aspectUtils.getKeyVal(joinPoint, annotation.key(), annotation.useArgsHash());
         log.info("Evaluated Redis cacheKey: " + key);
         reactiveRedisTemplate.opsForValue().delete(key).subscribe();
+        return joinPoint.proceed(joinPoint.getArgs());
+    }
+
+    /**
+     * RedisReactiveCacheFlushAll - Delete all cache enties from Redis
+     */
+    @Around("execution(public * *(..)) && @annotation(com.vsware.libraries.redisreactivecache.annotation.RedisReactiveCacheFlushAll)")
+    public Object redisReactiveCacheFlushAll(ProceedingJoinPoint joinPoint) throws Throwable {
+        log.info("FlushAll Redis.");
+        reactiveRedisTemplate.getConnectionFactory().getReactiveConnection().serverCommands().flushAll().subscribe();
         return joinPoint.proceed(joinPoint.getArgs());
     }
 

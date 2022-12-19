@@ -266,6 +266,24 @@ class RedisReactiveCacheTest {
         checkOriginalMethodIsExecutedNTimes(1);
     }
 
+    @Test
+    void test_flushAllDbRecs_whenCacheExists() throws InterruptedException {
+
+        List<TestTable> testTables = IntStream.range(0, 10)
+                .mapToObj(index -> new TestTable(index, faker.name().firstName(), LocalDateTime.now()))
+                .collect(Collectors.toList());
+        String cacheKey = calculateCacheKey("names", testTables);
+
+        //Create cache to exist
+        reactiveRedisTemplate.opsForValue().set(cacheKey, testTables).block();
+
+        //Deleting
+        testService.flushAllDbRecs().block();
+
+        checkThatKeyHasBeenRemovedFromRedis(cacheKey);
+        checkOriginalMethodIsExecutedNTimes(1);
+    }
+
     private void checkThatRedisContainsACachedObject(String key, TestTable testTable) {
         StepVerifier.create(reactiveRedisTemplate.opsForValue().get(key).log())
                 .expectNextMatches(redisResp -> {
@@ -296,7 +314,7 @@ class RedisReactiveCacheTest {
                 .verifyComplete();
     }
 
-    private void checkThatKeyHasBeenRemovedFromRedis(String name) {
+    private void  checkThatKeyHasBeenRemovedFromRedis(String name) {
         StepVerifier.create(reactiveRedisTemplate.opsForValue().get(name).log())
                 .expectNextCount(0)
                 .verifyComplete();
