@@ -10,6 +10,7 @@ This library provides 4 annotations:
 * `@ReactiveCacheGet` - gets cache, if cache not available, it will execute the method and store the result (without blocking server response) in cache for future use.
 * `@ReactiveCacheUpdate` - removes cache without blocking, execute annotated method and store the result in cache (without blocking server response).
 * `@ReactiveCacheEvict` - removes cache without blocking.
+* `@ReactiveCacheFlushAll` - Flush all cache without blocking.
 
 You can annotate your methods with any of them, and it will be automatically cached.
 All of those annotations has 2 arguments:
@@ -61,6 +62,11 @@ public class YourServiceClass {
 
     @ReactiveCacheEvict(key = "names", useArgsHash = true)
     public Mono<Void> deleteMultipleDbRecs(List<DbModel> dbModels) {
+        //your reactive call to DB
+    }
+
+    @ReactiveCacheFlushAll()
+    public Mono<Void> CleanUp() {
         //your reactive call to DB
     }
 }
