@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @Component
 @ConditionalOnClass({ReactiveRedisTemplate.class})
 @RequiredArgsConstructor
-public final class ReactiveCacheGetAspect extends AbstractReactiveCacheAddAspect {
+public final class ReactiveCacheGetAspect extends AbstractReactiveCacheAspect {
 
     private final AspectUtils aspectUtils;
     private final ObjectMapper objectMapper;

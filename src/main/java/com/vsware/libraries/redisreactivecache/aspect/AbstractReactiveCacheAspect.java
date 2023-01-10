@@ -8,7 +8,7 @@ import reactor.core.publisher.Mono;
 /**
  * @author hazem
  */
-abstract class AbstractReactiveCacheAddAspect {
+abstract class AbstractReactiveCacheAspect {
 
     abstract CachePort getCache();
 

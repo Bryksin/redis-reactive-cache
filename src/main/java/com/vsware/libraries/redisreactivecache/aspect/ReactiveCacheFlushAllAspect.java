@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 @Component
 @ConditionalOnClass({ReactiveRedisTemplate.class})
 @RequiredArgsConstructor
-public final class ReactiveCacheFlushAllAspect extends AbstractReactiveCacheAddAspect {
+public final class ReactiveCacheFlushAllAspect extends AbstractReactiveCacheAspect {
 
     private final CachePort cache;
 

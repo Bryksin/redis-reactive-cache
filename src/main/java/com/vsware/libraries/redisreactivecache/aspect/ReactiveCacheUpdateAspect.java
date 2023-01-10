@@ -22,7 +22,7 @@ import java.lang.reflect.Method;
 @Component
 @ConditionalOnClass({ReactiveRedisTemplate.class})
 @RequiredArgsConstructor
-public final class ReactiveCacheUpdateAspect extends AbstractReactiveCacheAddAspect {
+public final class ReactiveCacheUpdateAspect extends AbstractReactiveCacheAspect {
 
     private final AspectUtils aspectUtils;
     private final CachePort cache;
