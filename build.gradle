@@ -14,7 +14,7 @@ if (project.hasProperty('buildVersion')) {
 } else {
 	project.version = '0.4.0'
 }
-sourceCompatibility = '1.8'
+sourceCompatibility = "1.9"
 
 configurations {
 	compileOnly {
@@ -79,3 +79,5 @@ publishing {
 		}
 	}
 }
+
+targetCompatibility = JavaVersion.VERSION_1_9

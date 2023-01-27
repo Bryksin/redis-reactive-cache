@@ -8,6 +8,9 @@ import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
+import java.util.concurrent.TimeUnit;
+
 /**
  * @author hazem
  */
@@ -21,6 +24,12 @@ public class RedisCache implements CachePort {
     @Override
     public Mono<Void> set(String key, Object value) {
         return reactiveRedisTemplate.opsForValue().set(key, value)
+                .then();
+    }
+
+    @Override
+    public Mono<Void> set(String key, Object value, int ttl, TimeUnit timeUnit) {
+        return reactiveRedisTemplate.opsForValue().set(key, value, Duration.of(ttl, timeUnit.toChronoUnit()))
                 .then();
     }
 

@@ -30,7 +30,7 @@ import java.time.format.DateTimeFormatter;
 
 @Configuration
 @ConditionalOnClass(ReactiveRedisConnectionFactory.class)
-@ComponentScan(basePackages = "com.vsware.libraries.redisreactivecache")
+@ComponentScan(basePackages = "com.vsware.libraries.redisreactive.cache")
 public class RedisReactiveCacheConfig {
 
     @Value("${spring.redis.date_format:dd-MM-yyyy}")
