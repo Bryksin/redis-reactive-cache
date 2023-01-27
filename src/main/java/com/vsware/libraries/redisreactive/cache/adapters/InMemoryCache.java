@@ -7,6 +7,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author hazem
@@ -22,6 +23,11 @@ public class InMemoryCache implements CachePort {
         if (hasError) return Mono.error(new RuntimeException("Fake error"));
         cachedItems.put(key, value);
         return Mono.empty();
+    }
+
+    @Override
+    public Mono<Void> set(String key, Object value, int ttl, TimeUnit timeUnit) {
+        return set(key, value);
     }
 
     @Override

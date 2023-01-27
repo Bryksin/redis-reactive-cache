@@ -2,7 +2,7 @@ spring:
   application:
     name: redis-reactive-cache
   main:
-    web-application-type: reactive
+    web-application-type: none
   profiles:
     active: lib
 ---
