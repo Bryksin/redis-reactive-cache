@@ -51,7 +51,7 @@ jar {
 	enabled = true
 	archiveClassifier = ''
 	//required for testing, but not in final lib jar package
-	exclude 'com/vsware/libraries/redisreactivecache/RedisReactiveCacheApplication.class'
+	exclude 'com/vsware/libraries/redisreactive/RedisReactiveApplication.class'
 }
 
 test {
