@@ -29,7 +29,6 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
 @Configuration
-@ConditionalOnClass(ReactiveRedisConnectionFactory.class)
 @ComponentScan(basePackages = "com.vsware.libraries.redisreactive.cache")
 public class RedisReactiveCacheConfig {
 

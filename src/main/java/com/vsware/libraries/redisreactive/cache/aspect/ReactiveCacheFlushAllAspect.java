@@ -22,7 +22,7 @@ public final class ReactiveCacheFlushAllAspect extends AbstractReactiveCacheAspe
     /**
      * RedisReactiveCacheFlushAll - Delete all cache enties from Redis
      */
-    @Around("execution(public * *(..)) && @annotation(com.vsware.libraries.redisreactivecache.annotation.ReactiveCacheFlushAll)")
+    @Around("execution(public * *(..)) && @annotation(com.vsware.libraries.redisreactive.cache.annotation.ReactiveCacheFlushAll)")
     public Object redisReactiveCacheFlushAll(ProceedingJoinPoint joinPoint) throws Throwable {
         log.info("Flush all keys from cache");
         cache.flushAll().subscribe();

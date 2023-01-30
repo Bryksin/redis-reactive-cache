@@ -32,7 +32,7 @@ public final class ReactiveCacheAddAspect extends AbstractReactiveCacheAspect {
      * Intended to be used on method which creates brand-new record.
      * First returns saved record as server response, and under the hood (without blocking server response) saves record to Redis cache
      */
-    @Around("execution(public * *(..)) && @annotation(com.vsware.libraries.redisreactivecache.annotation.ReactiveCacheAdd)")
+    @Around("execution(public * *(..)) && @annotation(com.vsware.libraries.redisreactive.cache.annotation.ReactiveCacheAdd)")
     public Object redisReactiveCacheAdd(ProceedingJoinPoint joinPoint) {
         return addToCache(joinPoint,
                 getMethod(joinPoint).getReturnType(),

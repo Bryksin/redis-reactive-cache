@@ -34,7 +34,7 @@ public final class ReactiveCacheUpdateAspect extends AbstractReactiveCacheAspect
      * then return updated record as server response, and under the hood (without blocking server response)
      * saves updated record to Redis cache
      */
-    @Around("execution(public * *(..)) && @annotation(com.vsware.libraries.redisreactivecache.annotation.ReactiveCacheUpdate)")
+    @Around("execution(public * *(..)) && @annotation(com.vsware.libraries.redisreactive.cache.annotation.ReactiveCacheUpdate)")
     public Object redisReactiveCacheUpdate(ProceedingJoinPoint joinPoint) {
         return updateCache(joinPoint,
                 getMethod(joinPoint).getReturnType(),

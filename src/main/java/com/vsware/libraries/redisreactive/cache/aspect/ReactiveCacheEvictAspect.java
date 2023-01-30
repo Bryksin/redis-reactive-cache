@@ -26,7 +26,7 @@ public class ReactiveCacheEvictAspect extends AbstractReactiveCacheAspect {
      * Intended to be used on method which update some records in DB.
      * Evict cache from Redis without waiting for response, in the main time execute annotated method
      */
-    @Around("execution(public * *(..)) && @annotation(com.vsware.libraries.redisreactivecache.annotation.ReactiveCacheEvict)")
+    @Around("execution(public * *(..)) && @annotation(com.vsware.libraries.redisreactive.cache.annotation.ReactiveCacheEvict)")
     public Object redisReactiveCacheEvict(ProceedingJoinPoint joinPoint) throws Throwable {
         return evictCache(joinPoint,
                 getKey(joinPoint));

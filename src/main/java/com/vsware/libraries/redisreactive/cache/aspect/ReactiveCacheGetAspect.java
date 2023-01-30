@@ -39,7 +39,7 @@ public final class ReactiveCacheGetAspect extends AbstractReactiveCacheAspect {
      * set Redis with missing cache - to be available for next request.
      * If Redis cache exists - return cache, don't query DB
      */
-    @Around("execution(public * *(..)) && @annotation(com.vsware.libraries.redisreactivecache.annotation.ReactiveCacheGet)")
+    @Around("execution(public * *(..)) && @annotation(com.vsware.libraries.redisreactive.cache.annotation.ReactiveCacheGet)")
     public Object redisReactiveCacheGet(ProceedingJoinPoint joinPoint) {
         Method method = getMethod(joinPoint);
         return getFromCacheIfAvailable(joinPoint,

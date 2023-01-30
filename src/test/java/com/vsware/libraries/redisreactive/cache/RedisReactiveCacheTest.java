@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
+import org.springframework.test.context.ActiveProfiles;
 import reactor.test.StepVerifier;
 
 import java.time.LocalDateTime;
@@ -30,7 +31,7 @@ class RedisReactiveCacheTest {
     @Autowired
     private TestService testService;
     @Autowired
-    private ReactiveRedisTemplate reactiveRedisTemplate;
+    private ReactiveRedisTemplate<String, Object> reactiveRedisTemplate;
     @Autowired
     private ObjectMapper objectMapper;
     @Autowired

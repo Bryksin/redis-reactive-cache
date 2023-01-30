@@ -15,6 +15,5 @@ spring:
     port: 6379
     timeout: 5000
     client-name: ${spring.application.name}
-    client-type: lettuce #provide reactive connection
     date_format: "dd-MM-yyyy"
     time_format: "HH:mm:ss"

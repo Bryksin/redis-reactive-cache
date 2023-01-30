@@ -1,12 +1,13 @@
 package com.vsware.libraries.redisreactive.cache.config;
 
 import com.github.javafaker.Faker;
+import org.redisson.Redisson;
+import org.redisson.config.Config;
+import org.redisson.spring.data.connection.RedissonConnectionFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
-import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
-import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -26,9 +27,11 @@ public class RedisTestContainerConfig {
     @Primary
     public ReactiveRedisConnectionFactory reactiveRedisConnectionFactory() {
         redisContainer.start();
-        RedisStandaloneConfiguration redisConf = new RedisStandaloneConfiguration(redisContainer.getHost(),
-                redisContainer.getMappedPort(6379));
-        return new LettuceConnectionFactory(redisConf);
+        Config config = new Config();
+        config.useSingleServer()
+                .setAddress("redis://"+redisContainer.getHost()+":"+redisContainer.getMappedPort(6379));
+        
+        return new RedissonConnectionFactory(Redisson.create(config));
     }
 
     @Bean
